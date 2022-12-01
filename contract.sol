@@ -1,6 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
-
 
 contract Votacao {
 
@@ -67,8 +66,8 @@ contract Votacao {
     function votar(uint proposta) external {
         require(votacaoAberta, "Votacao fechada.");
         Votante storage sender = votantes[msg.sender];
-        require(sender.podeVotar, "Nao tem poder de voto");
-        require(!sender.jaVotou, "Ja votou");
+        require(sender.podeVotar, "Nao tem poder de voto.");
+        require(!sender.jaVotou, "Ja votou.");
         sender.jaVotou = true;
         sender.voto = proposta;
         propostas[proposta].contagemVotos += 1;
