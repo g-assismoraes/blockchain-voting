@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
 contract Votacao {
 
-    bool votacaoAberta;
+    bool public votacaoAberta;
+    uint public PEC_id;
 
     struct Votante {
         bool podeVotar;
@@ -11,8 +12,9 @@ contract Votacao {
         uint voto;
     }
 
-    struct Proposta {
+    struct TipoVoto {
         bytes32 descricao;
+        uint id;
         uint contagemVotos;
     }
 
@@ -20,17 +22,17 @@ contract Votacao {
 
     mapping(address => Votante) public votantes;
 
-    Proposta[] public propostas;
+    TipoVoto[] public votos;
 
-    constructor(bytes32[] memory nomesPropostas) {
+    constructor(uint id) {
         votacaoAberta = true;
+        PEC_id = id;
         presidenteVotacao = msg.sender;
-        for (uint i = 0; i < nomesPropostas.length; i++) {
-            propostas.push(Proposta({
-                descricao: nomesPropostas[i],
-                contagemVotos: 0
-            }));
-        }
+        votantes[presidenteVotacao].podeVotar = true;
+        votos.push(TipoVoto({descricao: "Favoravel",contagemVotos: 0, id:1}));
+        votos.push(TipoVoto({descricao: "Contrario",contagemVotos: 0, id:2}));
+        votos.push(TipoVoto({descricao: "Abstencao",contagemVotos: 0, id:3}));
+        
     }
 
     function consedePoderDeVoto(address votante) external {
@@ -63,27 +65,26 @@ contract Votacao {
         }
     
 
-    function votar(uint proposta) external {
+    function votar(uint proposta) external { //1 favoravel; 2 contrario; abstencao
         require(votacaoAberta, "Votacao fechada.");
         Votante storage sender = votantes[msg.sender];
         require(sender.podeVotar, "Nao tem poder de voto.");
         require(!sender.jaVotou, "Ja votou.");
         sender.jaVotou = true;
         sender.voto = proposta;
-        propostas[proposta].contagemVotos += 1;
+        votos[proposta].contagemVotos += 1;
     }
     
     function consultaResultado() external view
-            returns (bytes32 resultado)
+            returns (uint resultado)
     {   
-        uint propostaLiderando = 0;
+        resultado = 0;
         uint contagem = 0;
-        for (uint p = 0; p < propostas.length; p++) {
-            if (propostas[p].contagemVotos > contagem) {
-                contagem = propostas[p].contagemVotos;
-                propostaLiderando = p;
+        for (uint p = 0; p < votos.length; p++) {
+            if (votos[p].contagemVotos > contagem) {
+                contagem = votos[p].contagemVotos;
+                resultado = p;
             }
         }
-        resultado = propostas[propostaLiderando].descricao;
     }
 }
