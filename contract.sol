@@ -80,7 +80,7 @@ contract Votacao {
     {   
         resultado = 0;
         uint contagem = 0;
-        for (uint p = 0; p < votos.length; p++) {
+        for (uint p = 0; p < votos.length; p++) { //se tiver empate → aprovacao tem prioridade negacao e por ultimo abstencao
             if (votos[p].contagemVotos > contagem) {
                 contagem = votos[p].contagemVotos;
                 resultado = p;
