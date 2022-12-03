@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
 contract Votacao {
@@ -35,7 +35,7 @@ contract Votacao {
         
     }
 
-    function consedePoderDeVoto(address votante) external {
+    function concedePoderDeVoto(address votante) external {
         require(
             votacaoAberta,
             "Votacao fechada."
@@ -50,6 +50,17 @@ contract Votacao {
         );
         require(votantes[votante].podeVotar == false);
         votantes[votante].podeVotar = true;
+
+    }
+
+    function votar(uint tipoVoto) external { //0 favoravel; 1 contrario; 2 abstencao
+        require(votacaoAberta, "Votacao fechada.");
+        Votante storage sender = votantes[msg.sender];
+        require(sender.podeVotar, "Nao tem poder de voto.");
+        require(!sender.jaVotou, "Ja votou.");
+        sender.jaVotou = true;
+        sender.voto = tipoVoto;
+        votos[tipoVoto].contagemVotos += 1;
     }
 
     function encerraVotacao() external {
@@ -64,27 +75,12 @@ contract Votacao {
         votacaoAberta = false;
         }
     
-
-    function votar(uint proposta) external { //1 favoravel; 2 contrario; abstencao
-        require(votacaoAberta, "Votacao fechada.");
-        Votante storage sender = votantes[msg.sender];
-        require(sender.podeVotar, "Nao tem poder de voto.");
-        require(!sender.jaVotou, "Ja votou.");
-        sender.jaVotou = true;
-        sender.voto = proposta;
-        votos[proposta].contagemVotos += 1;
-    }
     
     function consultaResultado() external view
-            returns (uint resultado)
+            returns (uint numFavoravel, uint numContrario, uint numAbstencao)
     {   
-        resultado = 0;
-        uint contagem = 0;
-        for (uint p = 0; p < votos.length; p++) { //se tiver empate → aprovacao tem prioridade negacao e por ultimo abstencao
-            if (votos[p].contagemVotos > contagem) {
-                contagem = votos[p].contagemVotos;
-                resultado = p;
-            }
-        }
+        numFavoravel = votos[0].contagemVotos;
+        numContrario = votos[1].contagemVotos;
+        numAbstencao = votos[2].contagemVotos;
     }
 }
